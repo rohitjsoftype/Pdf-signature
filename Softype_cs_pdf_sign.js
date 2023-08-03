@@ -35,18 +35,55 @@
             }
         
             // dialog.create(options).then(success).catch(failure);
+            var fileSearchObj = search.create({
+                type: "file",
+                filters:
+                [
+                   ["filetype","anyof","PDF"]
+                ],
+                columns:
+                [
+                   search.createColumn({
+                      name: "name",
+                      sort: search.Sort.ASC,
+                      label: "Name"
+                   }),
+                   search.createColumn({name: "folder", label: "Folder"}),
+                   search.createColumn({name: "documentsize", label: "Size (KB)"}),
+                   search.createColumn({name: "url", label: "URL"}),
+                   search.createColumn({name: "created", label: "Date Created"}),
+                   search.createColumn({name: "modified", label: "Last Modified"}),
+                   search.createColumn({name: "filetype", label: "Type"})
+                ]
+             });
+             var searchResultCount = fileSearchObj.runPaged().count;
+             log.debug("fileSearchObj result count",searchResultCount);
+             let i=0;
+             let selectOptions = '<option value="">Select a option </option>'
+             while(i<searchResultCount){
+                let resultArr = fileSearchObj.run().getRange(i,i+999);
+                for(let j=0;j<resultArr.length;j++){
+                    selectOptions +=`<option value='${resultArr[j].getValue('url')}'>${resultArr[j].getValue("name")}</option>`
+                }
+                i += 999;
+
+             }
+             
            
-            var html;
-            html+='An academic plan for selected academic year and term is already approved.';
-            html+='<br/><br/>Click OK to update it or Cancel to select different parameters.<br/>';
+            var html='';
+            html+='<h2>Upload or select a pdf.</h2><br/>';
+            // html+='<br/><br/>Click OK to update it or Cancel to select different parameters.<br/>';
             // html+='<br/><img id="spinner" src="'+$("#custpage_img_ajaxloader").val()+'" alt="Loading"/>';
-            html+='<div id="btnModalY">';//<input class="btnAP" type="button" onClick="closeModal();" value="OK"/>
-            html+='<input id="btnCancel" type="button" onClick="init()" value="Cancel" /></div>';
+            html+='<div id="btnModalY"><div><input id="uploadfile" accept=".pdf" class="btnAP" type="file" value="Upload"/>';
+            html+='<div><br/><h2 style="text-align:center;">OR</h2><br/>';//
+            html +=`<div><select id="fileid">${selectOptions}</select><div><br/></div>`
+            html+='<div style="gap:20px"><span><input id="btnCancel" type="button" onClick="init()" value="Cancel" /></span>';
+            html+='<span style="margin-left:30px"><input id="okCancel" type="button" onClick="saveChoice()" value="Ok" /></span></div>';
             var option = {
                 width:500,
                 height:220,
                 content: html,
-                title:'Alert',
+                title:'Choose a file',
                 ignoreDelay: true,
                 closeButton:false,
                 blockScroll:false,
