@@ -64,6 +64,75 @@
                     </div>
                 </div>
                 <script>
+                function renderPdfFile(data){
+                    pdfjsLib.getDocument(data).promise.then(pdf => {
+                        // Get the number of pages in the PDF
+                        const numPages = pdf.numPages;
+    
+                        // Set up a container to hold the PDF pages and the image
+                        const pdfContainer = document.getElementById('pdfViewer');
+                        let pdfChildrens = pdfContainer.hasChildNodes()
+                        if (pdfChildrens) {
+                            pdfContainer.childNodes.forEach(child => pdfContainer.removeChild(child))
+                        }
+                        // Loop through each page and create a canvas element to display it
+                        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                            pdf.getPage(pageNum).then(page => {
+                                // Set the scale of the PDF. You can adjust this value as needed.
+                                const scale = 2;
+                                // Set the viewport based on the desired scale
+                                const viewport = page.getViewport({ scale });
+                                // Create a canvas element to display the page and the image
+                                const canvas = document.createElement('canvas');
+                                const context = canvas.getContext('2d');
+                                canvas.height = viewport.height;
+                                canvas.width = viewport.width;
+                                pdfContainer.appendChild(canvas);
+    
+                                // Render the page content on the canvas
+                                const renderContext = {
+                                    canvasContext: context,
+                                    viewport: viewport,
+                                };
+                                page.render(renderContext);
+                            });
+                        }
+                    });
+                }
+                
+                    function readPdfFile(file){
+                        const reader = new FileReader();
+                        reader.addEventListener("loadend",()=>{
+                            let data = reader.result;
+                            renderPdfFile(data)
+            
+                        })
+                        reader.readAsArrayBuffer(file)
+                    }
+                    function saveChoice(){
+                        let selectedFile = document.getElementById('fileid');
+                        let fileField = document.getElementById('uploadfile');
+
+                        let upfile = fileField.files[0]
+                        console.log(upfile)
+                        let url = selectedFile.value;
+                        alert(JSON.stringify({'file':upfile,'url':url}))
+                        if(upfile && url){
+                            alert('Choose only one option')
+                        }
+                        else if(upfile){
+                            readPdfFile(upfile)
+                            $('div[id^="jBox"]').remove();
+                        }else if(url){
+                            renderPdfFile(url)
+                            $('div[id^="jBox"]').remove();
+                        }else if((upfile == '' || upfile == null) && (url == '' || url == null )){
+                            alert('Choose atleast one option')
+                        }else{
+                            console.log('no')
+                        }
+                      
+                    }
                     function init(){
                         console.log('herea')
         
@@ -447,6 +516,7 @@
                 label: "Submit",
                 functionName:'sendEmail'
             });
+            
             form.clientScriptFileId = 69559;
             context.response.writePage(form);
          
