@@ -135,8 +135,10 @@
                     }
                     function init(){
                         console.log('herea')
+                        // window.close()
         
                         $('div[id^="jBox"]').remove();
+                        window.close()
                    }
                     window.jsPDF = window.jspdf.jsPDF;
                     const container = document.getElementById("container");
