@@ -1,38 +1,40 @@
- /**
-     * @NApiVersion 2.1
-     * @NScriptType Suitelet
-     * @NModuleScope SameAccount
-     */
-    /***************************************************************************************
-     ** Copyright (c) 1998-2024 Softype, Inc.
-    ** Ventus Infotech Private Limited,
-    ** All Rights Reserved.
-    **
-    ** This software is the confidential and proprietary information of Softype, Inc. ("Confidential Information").
-    ** You shall not disclose such Confidential Information and shall use it only in accordance with the terms of
-    ** the license agreement you entered into with Softype.
-    **
-    ** @Author      : Rohit Jha
-    ** @Dated       : 03-08-2023
-    ** @Version     : 2.1
-    ** @Description : for creating template and signing pdf
-    ***************************************************************************************/
+/**
+    * @NApiVersion 2.1
+    * @NScriptType Suitelet
+    * @NModuleScope SameAccount
+    */
+/***************************************************************************************
+ ** Copyright (c) 1998-2024 Softype, Inc.
+** Ventus Infotech Private Limited,
+** All Rights Reserved.
+**
+** This software is the confidential and proprietary information of Softype, Inc. ("Confidential Information").
+** You shall not disclose such Confidential Information and shall use it only in accordance with the terms of
+** the license agreement you entered into with Softype.
+**
+** @Author      : Rohit Jha
+** @Dated       : 03-08-2023
+** @Version     : 2.1
+** @Description : for creating template and signing pdf
+***************************************************************************************/
 
-    define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/redirect', 'N/http', 'N/task',  'N/config'],
+define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/redirect', 'N/http', 'N/task', 'N/config', 'N/file', 'N/xml'],
 
-       function(ui, search, record, render, url, redirect, http, task, config) {
+    function (ui, search, record, render, url, redirect, http, task, config,file,xml) {
 
-  /**
-         * Definition of the Suitelet script trigger point.
-         *
-         * @param {Object} context
-         * @param {ServerRequest} context.request - Encapsulation of the incoming request
-         * @param {ServerResponse} context.response - Encapsulation of the Suitelet response
-         * @Since 2015.2
-         */
+        /**
+               * Definition of the Suitelet script trigger point.
+               *
+               * @param {Object} context
+               * @param {ServerRequest} context.request - Encapsulation of the incoming request
+               * @param {ServerResponse} context.response - Encapsulation of the Suitelet response
+               * @Since 2015.2
+               */
         function onRequest(context) {
-        try {
-            let htmlContent = `<!DOCTYPE html>
+            try {
+
+                if (context.request.method === 'GET') {
+                    let htmlContent = `<!DOCTYPE html>
             <html>
             <head>
                 <title>Draggable Containers</title>
@@ -55,9 +57,7 @@
             </head>
             </head>
             <body>
-                <button id="sign">Sign</button>
-                <input type="file" accept=".pdf"  id="upload"/>
-                <button type="button" id="save">Save</button>
+             
                 <div class="main">
                     <div id="pdfViewer"></div>
                     <div class="draggable-container" id="container">
@@ -219,7 +219,8 @@
                         // Add the image to the PDF
                         // doc.addImage(finalImg.src, 'PNG', 0, 0, imgWidth, imgHeight);
             
-                        doc.addImage(finalImg.src, 'PNG', 10, 10, 300, 300);
+                        doc.addImage(finalImg.src, 'PNG',10, 10, 300, 300 , undefined,'FAST');
+                        //doc.addImage(finalImg.src, 'PNG', 10, 10, 300, 300);
                         // doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
             
             
@@ -493,42 +494,67 @@
             </body>
             </html>
             `
-            var form = ui.createForm({ // create new form
-                title: 'Pdf signature'
-            });
+                    var form = ui.createForm({ // create new form
+                        title: 'Pdf signature'
+                    });
 
-            var body_content = form.addField({
-                id: 'custpage_bodycontent',
-                type: ui.FieldType.INLINEHTML,
-                label: "Body"
-            });
-            body_content.defaultValue = htmlContent
-            form.addButton({
-                id: 'custpage_signholderbutton',
-                label: "Sign holder",
-                functionName: 'createSignHolder'
-            });
-            form.addButton({
-                id: 'custpage_cancelbutton',
-                label: "Cancel",
-                functionName: 'closeWindow'
-            });
-            form.addButton({
-                id: 'custpage_submit',
-                label: "Submit",
-                functionName:'sendEmail'
-            });
-            
-            form.clientScriptFileId = 69559;
-            context.response.writePage(form);
-         
-        }
-            catch(err){
-                log.error("err",err)
+                    var body_content = form.addField({
+                        id: 'custpage_bodycontent',
+                        type: ui.FieldType.INLINEHTML,
+                        label: "Body"
+                    });
+                    body_content.defaultValue = htmlContent
+                    form.addButton({
+                        id: 'custpage_signholderbutton',
+                        label: "Sign holder",
+                        functionName: 'createSignHolder'
+                    });
+                    form.addButton({
+                        id: 'custpage_cancelbutton',
+                        label: "Cancel",
+                        functionName: 'closeWindow'
+                    });
+                    form.addButton({
+                        id: 'custpage_save',
+                        label: "Save",
+                        functionName: 'sendDataDiv'
+                    });
+
+                    form.clientScriptFileId = 69559;
+                    context.response.writePage(form);
+
+                }
+                if (context.request.method === 'POST') {
+                    var div_data = context.request.parameters.div_main
+                    log.debug('div',div_data)
+                    var file1 = render.xmlToPdf
+                        ({
+                            xmlString: div_data
+                    });
+
+                //     var fileObj = file.create({                //creating png file in the file cabinet
+                //     name: 'signaturepdf.pdf',
+                //     fileType: file.Type.PDF,
+                //     contents: div_data,
+                //     folder: 10559,
+                // });
+                file1.name = 'signpdffi'
+                file1.folder= 10559;
+                var fileId = file1.save();  
+
+                log.debug("file",fileId)
+
+
+                }
             }
+            catch (err) {
+                log.error("err", err)
+            }
+
+
         }
-      
-    return {
-        onRequest:onRequest
-    }
-})
+
+        return {
+            onRequest: onRequest
+        }
+    })
