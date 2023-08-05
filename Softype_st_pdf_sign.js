@@ -54,11 +54,13 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                 <script src="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@v1.3.3/dist/jBox.all.min.js"></script>
                 <link href="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@v1.3.3/dist/jBox.all.min.css" rel="stylesheet">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
             </head>
             </head>
             <body>
              
-                <div class="main">
+                <div id="main1" class="main">
                     <div id="pdfViewer"></div>
                     <div class="draggable-container" id="container">
                     </div>
@@ -85,6 +87,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                                 // Create a canvas element to display the page and the image
                                 const canvas = document.createElement('canvas');
                                 const context = canvas.getContext('2d');
+                                // console.log("viewpoerthh", viewport.height)
+                                // console.log(" viewport.width",t)
                                 canvas.height = viewport.height;
                                 canvas.width = viewport.width;
                                 pdfContainer.appendChild(canvas);
