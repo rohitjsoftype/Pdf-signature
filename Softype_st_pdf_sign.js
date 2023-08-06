@@ -154,90 +154,90 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                     window.addEventListener('DOMContentLoaded',()=>{
                         container.style.display = 'none'
                     })
-                    savebtn.addEventListener('click', () => {
-                    // Function to draw an image on the canvas
-                    async function drawImageOnCanvas(canvas, imageSrc, x, y, width, height) {
-                        const ctx = canvas.getContext('2d');
-                        const image = await loadImage(imageSrc);
-                        ctx.drawImage(image, x, y, width, height);
-                    }
+                    // savebtn.addEventListener('click', () => {
+                    // // Function to draw an image on the canvas
+                    // async function drawImageOnCanvas(canvas, imageSrc, x, y, width, height) {
+                    //     const ctx = canvas.getContext('2d');
+                    //     const image = await loadImage(imageSrc);
+                    //     ctx.drawImage(image, x, y, width, height);
+                    // }
             
-                    // Function to load an image asynchronously
-                    function loadImage(imageSrc) {
-                        return new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.onload = () => resolve(img);
-                        img.onerror = reject;
-                        img.src = imageSrc;
-                        });
-                    }
+                    // // Function to load an image asynchronously
+                    // function loadImage(imageSrc) {
+                    //     return new Promise((resolve, reject) => {
+                    //     const img = new Image();
+                    //     img.onload = () => resolve(img);
+                    //     img.onerror = reject;
+                    //     img.src = imageSrc;
+                    //     });
+                    // }
             
-                    const newCanvas = document.createElement('canvas');
-                    const context = newCanvas.getContext('2d');
-                    newCanvas.width = 2000;
-                    newCanvas.height = 3000;
-                    const canvases = document.querySelectorAll("canvas");
-                    let prevHeight = 0;
+                    // const newCanvas = document.createElement('canvas');
+                    // const context = newCanvas.getContext('2d');
+                    // newCanvas.width = 2000;
+                    // newCanvas.height = 3000;
+                    // const canvases = document.querySelectorAll("canvas");
+                    // let prevHeight = 0;
             
-                    // Using Promise.all to wait for all canvas images to load
-                    Promise.all(Array.from(canvases).map((canvas) => {
-                        const parent = canvas.parentNode;
-                        const newImg = canvas.toDataURL('image/png');
-                        const imageObj = {
-                        img: newImg,
-                        x: parseInt(parent.style.left.replace("px", '')) || 0,
-                        y: parseInt(parent.style.top.replace("px", '')) || prevHeight,
-                        width: canvas.width,
-                        height: canvas.height
-                        };
-                        prevHeight += canvas.height;
-                        return imageObj;
-                    }))
-                        .then((imageObjects) => {
-                        // Draw images on the newCanvas in sequence
-                        return imageObjects.reduce((promise, imageObj) => {
-                            return promise.then(() => drawImageOnCanvas(newCanvas, imageObj.img, imageObj.x, imageObj.y, imageObj.width, imageObj.height));
-                        }, Promise.resolve());
-                        })
-                        .then(() => {
-                        // Append the newCanvas as an image to the "main" div
-                        const finalImg = document.createElement('img');
-                        finalImg.src = newCanvas.toDataURL("image/png");
-                        finalImg.width = "50%";
-                        finalImg.height = "50%";
-                        // document.querySelector(".main").appendChild(finalImg);
-                        console.log('finalImg', finalImg);
+                    // // Using Promise.all to wait for all canvas images to load
+                    // Promise.all(Array.from(canvases).map((canvas) => {
+                    //     const parent = canvas.parentNode;
+                    //     const newImg = canvas.toDataURL('image/png');
+                    //     const imageObj = {
+                    //     img: newImg,
+                    //     x: parseInt(parent.style.left.replace("px", '')) || 0,
+                    //     y: parseInt(parent.style.top.replace("px", '')) || prevHeight,
+                    //     width: canvas.width,
+                    //     height: canvas.height
+                    //     };
+                    //     prevHeight += canvas.height;
+                    //     return imageObj;
+                    // }))
+                    //     .then((imageObjects) => {
+                    //     // Draw images on the newCanvas in sequence
+                    //     return imageObjects.reduce((promise, imageObj) => {
+                    //         return promise.then(() => drawImageOnCanvas(newCanvas, imageObj.img, imageObj.x, imageObj.y, imageObj.width, imageObj.height));
+                    //     }, Promise.resolve());
+                    //     })
+                    //     .then(() => {
+                    //     // Append the newCanvas as an image to the "main" div
+                    //     const finalImg = document.createElement('img');
+                    //     finalImg.src = newCanvas.toDataURL("image/png");
+                    //     finalImg.width = "50%";
+                    //     finalImg.height = "50%";
+                    //     // document.querySelector(".main").appendChild(finalImg);
+                    //     console.log('finalImg', finalImg);
                     
-                        // Get the image width and height
-                        const imgWidth = finalImg.width;
-                        const imgHeight = finalImg.height;
-                        // const doc1 = new window.PDFDocument()
-                        // // Scale proprotionally to the specified width
-                        // doc1.image(finalImg.src, 0, 15, {width: 300})
-                        // doc1.end()
-                        // window.open(doc1);
-                        console.log('imgwidth',imgWidth);
-                        console.log('imgheigth',imgHeight)
-                        // Create a new jsPDF instance
-                        const doc = new jsPDF();
-                        // Add the image to the PDF
-                        // doc.addImage(finalImg.src, 'PNG', 0, 0, imgWidth, imgHeight);
+                    //     // Get the image width and height
+                    //     const imgWidth = finalImg.width;
+                    //     const imgHeight = finalImg.height;
+                    //     // const doc1 = new window.PDFDocument()
+                    //     // // Scale proprotionally to the specified width
+                    //     // doc1.image(finalImg.src, 0, 15, {width: 300})
+                    //     // doc1.end()
+                    //     // window.open(doc1);
+                    //     console.log('imgwidth',imgWidth);
+                    //     console.log('imgheigth',imgHeight)
+                    //     // Create a new jsPDF instance
+                    //     const doc = new jsPDF();
+                    //     // Add the image to the PDF
+                    //     // doc.addImage(finalImg.src, 'PNG', 0, 0, imgWidth, imgHeight);
             
-                        doc.addImage(finalImg.src, 'PNG',10, 10, 300, 300 , undefined,'FAST');
-                        //doc.addImage(finalImg.src, 'PNG', 10, 10, 300, 300);
-                        // doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
+                    //     doc.addImage(finalImg.src, 'PNG',10, 10, 300, 300 , undefined,'FAST');
+                    //     //doc.addImage(finalImg.src, 'PNG', 10, 10, 300, 300);
+                    //     // doc.addImage('monkey', 70, 10, 100, 120); // use the cached 'monkey' image, JPEG is optional regardless
             
             
             
-                        // doc.output('datauri');
-                        // Save the PDF
-                        doc.save('SigendPdf.pdf');
+                    //     // doc.output('datauri');
+                    //     // Save the PDF
+                    //     doc.save('SigendPdf.pdf');
                  
-                        })
-                        .catch((error) => {
-                        console.error('Error while saving:', error);
-                        });
-                    });
+                    //     })
+                    //     .catch((error) => {
+                    //     console.error('Error while saving:', error);
+                    //     });
+                    // });
             
                     // savebtn.addEventListener('click',()=>{
                     //     const newCanvas = document.createElement('canvas');
@@ -266,63 +266,63 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                     //     console.log('finalImg',finalImg)
                     // })
                    
-                    uploadFile.addEventListener("input",()=>{
-                        const file = uploadFile.files[0];
-                        const reader = new FileReader();
-                        reader.addEventListener("loadend",()=>{
-                            let data = reader.result;
-                            pdfjsLib.getDocument(data).promise.then(pdf => {
-                                // Get the number of pages in the PDF
-                                const numPages = pdf.numPages;
+                    // uploadFile.addEventListener("input",()=>{
+                    //     const file = uploadFile.files[0];
+                    //     const reader = new FileReader();
+                    //     reader.addEventListener("loadend",()=>{
+                    //         let data = reader.result;
+                    //         pdfjsLib.getDocument(data).promise.then(pdf => {
+                    //             // Get the number of pages in the PDF
+                    //             const numPages = pdf.numPages;
             
-                                // Set up a container to hold the PDF pages and the image
-                                const pdfContainer = document.getElementById('pdfViewer');
-                                let pdfChildrens = pdfContainer.hasChildNodes() 
-                                if(pdfChildrens){
-                                    pdfContainer.childNodes.forEach(child=>pdfContainer.removeChild(child))
-                                }
-                                // Loop through each page and create a canvas element to display it
-                                for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-                                    pdf.getPage(pageNum).then(page => {
-                                    // Set the scale of the PDF. You can adjust this value as needed.
-                                    const scale = 1.5;
+                    //             // Set up a container to hold the PDF pages and the image
+                    //             const pdfContainer = document.getElementById('pdfViewer');
+                    //             let pdfChildrens = pdfContainer.hasChildNodes() 
+                    //             if(pdfChildrens){
+                    //                 pdfContainer.childNodes.forEach(child=>pdfContainer.removeChild(child))
+                    //             }
+                    //             // Loop through each page and create a canvas element to display it
+                    //             for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                    //                 pdf.getPage(pageNum).then(page => {
+                    //                 // Set the scale of the PDF. You can adjust this value as needed.
+                    //                 const scale = 1.5;
             
-                                    // Set the viewport based on the desired scale
-                                    const viewport = page.getViewport({ scale });
+                    //                 // Set the viewport based on the desired scale
+                    //                 const viewport = page.getViewport({ scale });
             
-                                    // Create a canvas element to display the page and the image
-                                    const canvas = document.createElement('canvas');
-                                    const context = canvas.getContext('2d');
-                                    canvas.height = viewport.height;
-                                    canvas.width = viewport.width;
-                                    pdfContainer.appendChild(canvas);
+                    //                 // Create a canvas element to display the page and the image
+                    //                 const canvas = document.createElement('canvas');
+                    //                 const context = canvas.getContext('2d');
+                    //                 canvas.height = viewport.height;
+                    //                 canvas.width = viewport.width;
+                    //                 pdfContainer.appendChild(canvas);
             
                                 
             
-                                    // Render the page content on the canvas
-                                    const renderContext = {
-                                        canvasContext: context,
-                                        viewport: viewport,
-                                    };
-                                    page.render(renderContext);
-                                    });
-                                }
-                            });
+                    //                 // Render the page content on the canvas
+                    //                 const renderContext = {
+                    //                     canvasContext: context,
+                    //                     viewport: viewport,
+                    //                 };
+                    //                 page.render(renderContext);
+                    //                 });
+                    //             }
+                    //         });
             
-                        })
-                        reader.readAsArrayBuffer(file)
+                    //     })
+                    //     reader.readAsArrayBuffer(file)
             
                   
                    
-                    })
+                    // })
             
                 
                     let mouseOffsetX, mouseOffsetY;
-                    const signbtn = document.getElementById('sign');
-                    signbtn.addEventListener('click',()=>{
-                        let suitelet_Url = "https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2258&deploy=1&compid=TSTDRV1338970&h=4c4adb9172d7477b2cf5"
-                        window.open(suitelet_Url ,'myWindow','width=750,height=500,resizable=no')
-                    })
+                    // const signbtn = document.getElementById('sign');
+                    // signbtn.addEventListener('click',()=>{
+                    //     let suitelet_Url = "https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2258&deploy=1&compid=TSTDRV1338970&h=4c4adb9172d7477b2cf5"
+                    //     window.open(suitelet_Url ,'myWindow','width=750,height=500,resizable=no')
+                    // })
                   
                     window.addEventListener("message", function (event) {
                         // Ensure the message is from the expected origin
