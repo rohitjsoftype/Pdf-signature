@@ -102,7 +102,72 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
         // recObj.setValue('custpage_bodycontent','<p>hello world<p>')
     }
 
-    async function sendDataDiv() {
+    function createTemplate(context) {
+        var div_drag = document.querySelectorAll('#drag-div');
+        var div_data = ""
+        for (var i = 0; i < div_drag.length; i++) {
+            div_data += div_drag[i].outerHTML;
+        }
+        var file = document.getElementById('uploadfile')?.files[0];
+
+        var requestData;
+        if (file) {
+            
+            var fileReader = new FileReader();
+            // Read the file as binary and send it to SuiteScript
+            fileReader.onload = function (event) {
+                var fileData = event.target.result;
+                console.log("fileData",fileData)
+                requestData = {
+                    file: {
+                        name: file.name,
+                        type: file.type,
+                        contents: fileData.split(',')[1], // Extract the base64-encoded data from the data URL
+                        isOnline: true // Set to true to store the file in the file cabinet
+                    },
+                    div_data:div_data
+                };
+
+                console.log("requestData",requestData)
+
+                var response = https.post({
+                    url: 'https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2254&deploy=1&compid=TSTDRV1338970&h=f05d0658b66b376313fc', // Replace with your SuiteScript script URL
+                    body: JSON.stringify(requestData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+               
+            };
+            // Read the file as binary data
+            fileReader.readAsDataURL(file);
+        }
+        else
+        {
+            let selectedFile = document.getElementById('fileid');
+            var fileurl = selectedFile.value;
+            requestData = {
+                url: fileurl,
+                div_data:div_data
+            }
+
+            var response = https.post({
+                url: 'https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2254&deploy=1&compid=TSTDRV1338970&h=f05d0658b66b376313fc', // Replace with your SuiteScript script URL
+                body: JSON.stringify(requestData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+        }
+
+    
+       
+    }
+
+
+
+    function sendDataDiv() {
 
         // var div_main = document.querySelector('#drag-div');
         // // var div_main = document.querySelector('.main').innerHTML;
@@ -134,336 +199,337 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
 
         // //var img_position = Math.ceil((div_main.style.top%totalheight)*canvases.length-1);
         // for (var i = 0; i < canvases.length; i++) {
-            //     //do something to each div like
-            //     // var can_element = document.createElement('canvas');
-            //     //     var ctx = can_element.getContext('2d');
-            //     //     var img = new Image();
-            //     //     var canvasData = await new Promise((resolve,reject)=>{
-            //     //        let can_data = canvases[i].toDataURL('image/png')
-            //     //         resolve(can_data)
-            //     //         })
-            //     //         .then(data =>{
-            //     //         img.src=data;
-            //     //  });
-            //     //     ctx.drawImage(img.src,0,0,canvases[i].width,canvases[i].height);
-            //     //     if(i == img_position)
-            //     //     {
-            //     //         ctx.fillRect(div_main.style.top,div_main.style.left,div_main.style.width,div_main.style.height)
-            //     //     }
-            //     //     var canvasDataimg = await new Promise((resolve,reject)=>{
-            //     //     let can_data = can_element.toDataURL('image/png')
-            //     //         resolve(can_data)
-            //     // }).then(data=>{
-            //     //         img.src=data;
-            //     //     });
+        //     //do something to each div like
+        //     // var can_element = document.createElement('canvas');
+        //     //     var ctx = can_element.getContext('2d');
+        //     //     var img = new Image();
+        //     //     var canvasData = await new Promise((resolve,reject)=>{
+        //     //        let can_data = canvases[i].toDataURL('image/png')
+        //     //         resolve(can_data)
+        //     //         })
+        //     //         .then(data =>{
+        //     //         img.src=data;
+        //     //  });
+        //     //     ctx.drawImage(img.src,0,0,canvases[i].width,canvases[i].height);
+        //     //     if(i == img_position)
+        //     //     {
+        //     //         ctx.fillRect(div_main.style.top,div_main.style.left,div_main.style.width,div_main.style.height)
+        //     //     }
+        //     //     var canvasDataimg = await new Promise((resolve,reject)=>{
+        //     //     let can_data = can_element.toDataURL('image/png')
+        //     //         resolve(can_data)
+        //     // }).then(data=>{
+        //     //         img.src=data;
+        //     //     });
 
 
-            //Working
+        //Working
 
-            var quotes = document.getElementById('main1')
-            html2canvas(quotes).then((canvas) => {
-                //! MAKE YOUR PDF
-                var pdf = new jsPDF('p', 'pt', 'letter');
+        var quotes = document.getElementById('main1');
+        html2canvas(quotes).then((canvas) => {
+            //! MAKE YOUR PDF
+            var pdf = new jsPDF('p', 'pt', 'letter');
 
-                for (var i = 0; i <= quotes.clientHeight / 1584; i++) {
-                    //! This is all just html2canvas stuff
-                    var srcImg = canvas;
-                    var sX = 120;
-                    if (i == 0) {
-                        var sY = 50;
-                    }
-                    else {
-                        var sY = 1980 * i; // start 980 pixels down for every new page
-                    }
-
-                    var sWidth = 1380;
-                    var sHeight = 1980;
-                    var dX = 0;
-                    var dY = 0;
-                    var dWidth = 1380;
-                    var dHeight = 1980;
-
-                    window.onePageCanvas = document.createElement("canvas");
-                    onePageCanvas.setAttribute('width', 1380);
-                    onePageCanvas.setAttribute('height', 1980);
-                    var ctx = onePageCanvas.getContext('2d');
-                    // details on this usage of this function: 
-                    // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
-                    ctx.drawImage(srcImg, sX, sY, sWidth, sHeight, dX, dY, dWidth, dHeight);
-
-                    // document.body.appendChild(canvas);
-                    var canvasDataURL = onePageCanvas.toDataURL("image/png", 1.0);
-
-                    var width = onePageCanvas.width;
-                    var height = onePageCanvas.clientHeight;
-
-                    console.log("height", height);
-                    console.log("width", width);
-                    //! If we're on anything other than the first page,
-                    // add another page
-                    if (i > 0) {
-                        pdf.addPage(); //8.5" x 11" in pts (in*72)
-                    }
-                    //! now we declare that we're working on that page
-                    pdf.setPage(i + 1);
-                    //! now we add content to that page!
-                    pdf.addImage(canvasDataURL, 'JPEG', 40, 30, 560, 720, 'undefined' + i, 'FAST');
-
+            for (var i = 0; i <= quotes.clientHeight / 1584; i++) {
+                //! This is all just html2canvas stuff
+                var srcImg = canvas;
+                var sX = 120;
+                if (i == 0) {
+                    var sY = 50;
                 }
-                //! after the for loop is finished running, we save the pdf.
-                pdf.save('Test45.pdf');
+                else {
+                    var sY = 1980 * i; // start 980 pixels down for every new page
+                }
+
+                var sWidth = 1380;
+                var sHeight = 1980;
+                var dX = 0;
+                var dY = 0;
+                var dWidth = 1380;
+                var dHeight = 1980;
+
+                window.onePageCanvas = document.createElement("canvas");
+                onePageCanvas.setAttribute('width', 1380);
+                onePageCanvas.setAttribute('height', 1980);
+                var ctx = onePageCanvas.getContext('2d');
+                // details on this usage of this function: 
+                // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
+                ctx.drawImage(srcImg, sX, sY, sWidth, sHeight, dX, dY, dWidth, dHeight);
+
+                // document.body.appendChild(canvas);
+                var canvasDataURL = onePageCanvas.toDataURL("image/png", 1.0);
+
+                var width = onePageCanvas.width;
+                var height = onePageCanvas.clientHeight;
+
+                console.log("height", height);
+                console.log("width", width);
+                //! If we're on anything other than the first page,
+                // add another page
+                if (i > 0) {
+                    pdf.addPage(); //8.5" x 11" in pts (in*72)
+                }
+                //! now we declare that we're working on that page
+                pdf.setPage(i + 1);
+                //! now we add content to that page!
+                pdf.addImage(canvasDataURL, 'JPEG', 40, 30, 560, 720, 'undefined' + i, 'FAST');
 
             }
-            )
-
-
-
-
-
-
-
-            // var quotes = document.getElementById('main1')
-            // html2canvas(quotes).then((canvas) => {
-            //      //! MAKE YOUR PDF
-            //      var pdf = new jsPDF('p', 'px', 'letter');
-
-            //      for (var i = 0; i <= quotes.clientHeight/980; i++) {
-            //          //! This is all just html2canvas stuff
-            //          var srcImg  = canvas;
-            //          var sX      = 0;
-            //          var sY      = 980*i; // start 980 pixels down for every new page
-            //          var sWidth  = 900;
-            //          var sHeight = 980;
-            //          var dX      = 0;
-            //          var dY      = 0;
-            //          var dWidth  = 750;
-            //          var dHeight = 500;
-
-            //          window.onePageCanvas = document.createElement("canvas");
-            //          onePageCanvas.setAttribute('width', 750);
-            //          onePageCanvas.setAttribute('height', 500);
-            //          var ctx = onePageCanvas.getContext('2d');
-            //          // details on this usage of this function: 
-            //          // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
-            //          ctx.drawImage(srcImg,sX,sY,sWidth,sHeight,dX,dY,dWidth,dHeight);
-
-            //          // document.body.appendChild(canvas);
-            //          var canvasDataURL = onePageCanvas.toDataURL("image/png", 1.0);
-
-            //          var width         = onePageCanvas.width;
-            //          var height        = onePageCanvas.clientHeight;
-
-            //          //! If we're on anything other than the first page,
-            //          // add another page
-            //          if (i > 0) {
-            //              pdf.addPage(); //8.5" x 11" in pts (in*72)
-            //          }
-            //          //! now we declare that we're working on that page
-            //          pdf.setPage(i+1);
-            //          //! now we add content to that page!
-            //          pdf.addImage(canvasDataURL, 'PNG', 20, 40, (width*.62), (height*.62),'undefined'+i,'FAST');
-
-            //      }
-            //      //! after the for loop is finished running, we save the pdf.
-            //      pdf.save('Test.pdf');
-            //    });
-
-
-
-
-
-
-            //     var canvasdata = canvases[i].toDataURL('image/png')
-            //     //     // doc.addImage(canvasdata, 'PNG',10, 10, 150, 300 , 'canvas'+i,'FAST');
-            //     htmlvar += '<img height="1150px" width="750px" src="' + xml.escape(canvasdata) + '"/>'
-            // }
-            // // // // doc.save('SigendPdf.pdf');
-            // var divHeight = $('#main1').height();
-            // var divWidth = $('#main1').width();
-            // console.log("divHeight", divHeight)
-            // console.log("divWidth", divWidth)
-            // console.log("top", div_main.style.top)
-            // console.log("div_main.style.left", div_main.style.left)
-
-            // htmlvar += `<div style='height:${div_main.style.height}; width:${div_main.style.width}; top:${div_main.style.top}; left:${div_main.style.left}; background-color:${div_main.style.backgroundColor}; position:${div_main.style.position}'></div>`
-            // htmlvar += '</div></body>'
-            // htmlvar += '</html>'
-
-            // html2pdf(htmlvar);
-            // htmlvar += '</pdf>';
-
-            // var bodydata = {
-            //     'div_main': htmlvar
-            // }
-
-            // console.log(bodydata);
-
-            // var response = https.post({
-            //     url: 'https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2254&deploy=1&compid=TSTDRV1338970&h=f05d0658b66b376313fc',
-            //     body: bodydata
-            // });
+            //! after the for loop is finished running, we save the pdf.
+            pdf.save('Test45.pdf');
 
         }
+        )
 
-        function closeWindow() {
-            window.close()
-        }
-        function createSignHolder() {
-            // alert('here')
-            let scrollY = 0
-            // let mousemoved = 0
-            // function updateScrollY(){
-            //     const windowHeight = window.innerHeight;
-            //     const totalContentHeight = document.querySelector('#div__body').scrollHeight;
-            //     const availableScrollHeight = totalContentHeight - windowHeight;
-            //     console.log('clientY0',mousemoved)
-            //     scrollY = (mousemoved / windowHeight) * availableScrollHeight;
-            //     console.log(JSON.stringify({
-            //     windowHeight,totalContentHeight,availableScrollHeight,scrollY
-            //     }))
-            // }
-            // function updateMousePos(e){
-            //     mousemoved = e.clientY
-            // }
-            // document.querySelector('#body').addEventListener('scrollend',updateScrollY)
-            
-            let div = document.createElement('div');
-            div.id = 'drag-div'
-            div.style.width = '100px';
-            div.style.height = '100px';
-            div.style.backgroundColor = 'black'
-            div.style.position = 'absolute'
-            let main = document.querySelector('.main')
-            main.prepend(div)
-            // div.addEventListener()
-            const draggableResizable = document.getElementById("drag-div");
-            let isDragging = false;
-            let isResizing = false;
-            let resizeStartX, resizeStartY;
-            let originalWidth, originalHeight;
-            function dragImg(event) {
-                // console.log('event',event.target)
-                if (event.target.id === "drag-div") {
-                    isDragging = true;
-                    // updateMousePos(event)
-                    // console.log('event.clientX ',event.clientX )
-                    // Calculate the offset between the mouse and the div's top-left corner
-                    const rect = event.target.getBoundingClientRect();
-                    const offsetX = event.clientX - rect.left;
-                    const offsetY = event.clientY - rect.top;
 
-                    // Update the position of the div based on the mouse movement
-                    document.addEventListener("mousemove", drag);
-                    function drag(event) {
-                        if (isDragging) {
-                            window.scroll(event.clientX,event.clientHeight)
-                            // console.log('offsetX',offsetX);
-                            // console.log('offsetY',offsetY);
-                            draggableResizable.style.left = window.screenX + (event.clientX - offsetX) + "px";
-                            // const windowHeight = window.innerHeight;
-                            const totalContentHeight = document.querySelector('#div__body').scrollHeight;
 
-                            // if(scrollY >= (windowHeight * 1.2)){
-                            //     draggableResizable.style.top = (scrollY - event.clientY) + (event.clientY - offsetY) + "px";
-                            // }else{
-                                scrollY = document.querySelector('#body').scrollTop
-                                if(scrollY < totalContentHeight){
-                                    draggableResizable.style.top = scrollY + (event.clientY - offsetY) + "px";
-                                }
 
-                            // }
+
+
+
+        // var quotes = document.getElementById('main1')
+        // html2canvas(quotes).then((canvas) => {
+        //      //! MAKE YOUR PDF
+        //      var pdf = new jsPDF('p', 'px', 'letter');
+
+        //      for (var i = 0; i <= quotes.clientHeight/980; i++) {
+        //          //! This is all just html2canvas stuff
+        //          var srcImg  = canvas;
+        //          var sX      = 0;
+        //          var sY      = 980*i; // start 980 pixels down for every new page
+        //          var sWidth  = 900;
+        //          var sHeight = 980;
+        //          var dX      = 0;
+        //          var dY      = 0;
+        //          var dWidth  = 750;
+        //          var dHeight = 500;
+
+        //          window.onePageCanvas = document.createElement("canvas");
+        //          onePageCanvas.setAttribute('width', 750);
+        //          onePageCanvas.setAttribute('height', 500);
+        //          var ctx = onePageCanvas.getContext('2d');
+        //          // details on this usage of this function: 
+        //          // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
+        //          ctx.drawImage(srcImg,sX,sY,sWidth,sHeight,dX,dY,dWidth,dHeight);
+
+        //          // document.body.appendChild(canvas);
+        //          var canvasDataURL = onePageCanvas.toDataURL("image/png", 1.0);
+
+        //          var width         = onePageCanvas.width;
+        //          var height        = onePageCanvas.clientHeight;
+
+        //          //! If we're on anything other than the first page,
+        //          // add another page
+        //          if (i > 0) {
+        //              pdf.addPage(); //8.5" x 11" in pts (in*72)
+        //          }
+        //          //! now we declare that we're working on that page
+        //          pdf.setPage(i+1);
+        //          //! now we add content to that page!
+        //          pdf.addImage(canvasDataURL, 'PNG', 20, 40, (width*.62), (height*.62),'undefined'+i,'FAST');
+
+        //      }
+        //      //! after the for loop is finished running, we save the pdf.
+        //      pdf.save('Test.pdf');
+        //    });
+
+
+
+
+
+
+        //     var canvasdata = canvases[i].toDataURL('image/png')
+        //     //     // doc.addImage(canvasdata, 'PNG',10, 10, 150, 300 , 'canvas'+i,'FAST');
+        //     htmlvar += '<img height="1150px" width="750px" src="' + xml.escape(canvasdata) + '"/>'
+        // }
+        // // // // doc.save('SigendPdf.pdf');
+        // var divHeight = $('#main1').height();
+        // var divWidth = $('#main1').width();
+        // console.log("divHeight", divHeight)
+        // console.log("divWidth", divWidth)
+        // console.log("top", div_main.style.top)
+        // console.log("div_main.style.left", div_main.style.left)
+
+        // htmlvar += `<div style='height:${div_main.style.height}; width:${div_main.style.width}; top:${div_main.style.top}; left:${div_main.style.left}; background-color:${div_main.style.backgroundColor}; position:${div_main.style.position}'></div>`
+        // htmlvar += '</div></body>'
+        // htmlvar += '</html>'
+
+        // html2pdf(htmlvar);
+        // htmlvar += '</pdf>';
+
+        // var bodydata = {
+        //     'div_main': htmlvar
+        // }
+
+        // console.log(bodydata);
+
+        // var response = https.post({
+        //     url: 'https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2254&deploy=1&compid=TSTDRV1338970&h=f05d0658b66b376313fc',
+        //     body: bodydata
+        // });
+
+    }
+
+    function closeWindow() {
+        window.close()
+    }
+    function createSignHolder() {
+        // alert('here')
+        let scrollY = 0
+        // let mousemoved = 0
+        // function updateScrollY(){
+        //     const windowHeight = window.innerHeight;
+        //     const totalContentHeight = document.querySelector('#div__body').scrollHeight;
+        //     const availableScrollHeight = totalContentHeight - windowHeight;
+        //     console.log('clientY0',mousemoved)
+        //     scrollY = (mousemoved / windowHeight) * availableScrollHeight;
+        //     console.log(JSON.stringify({
+        //     windowHeight,totalContentHeight,availableScrollHeight,scrollY
+        //     }))
+        // }
+        // function updateMousePos(e){
+        //     mousemoved = e.clientY
+        // }
+        // document.querySelector('#body').addEventListener('scrollend',updateScrollY)
+
+        let div = document.createElement('div');
+        div.id = 'drag-div'
+        div.style.width = '100px';
+        div.style.height = '100px';
+        div.style.backgroundColor = 'black'
+        div.style.position = 'absolute'
+        let main = document.querySelector('.main')
+        main.prepend(div)
+        // div.addEventListener()
+        const draggableResizable = document.getElementById("drag-div");
+        let isDragging = false;
+        let isResizing = false;
+        let resizeStartX, resizeStartY;
+        let originalWidth, originalHeight;
+        function dragImg(event) {
+            // console.log('event',event.target)
+            if (event.target.id === "drag-div") {
+                isDragging = true;
+                // updateMousePos(event)
+                // console.log('event.clientX ',event.clientX )
+                // Calculate the offset between the mouse and the div's top-left corner
+                const rect = event.target.getBoundingClientRect();
+                const offsetX = event.clientX - rect.left;
+                const offsetY = event.clientY - rect.top;
+
+                // Update the position of the div based on the mouse movement
+                document.addEventListener("mousemove", drag);
+                function drag(event) {
+                    if (isDragging) {
+                        window.scroll(event.clientX, event.clientHeight)
+                        // console.log('offsetX',offsetX);
+                        // console.log('offsetY',offsetY);
+                        draggableResizable.style.left = window.screenX + (event.clientX - offsetX) + "px";
+                        // const windowHeight = window.innerHeight;
+                        const totalContentHeight = document.querySelector('#div__body').scrollHeight;
+
+                        // if(scrollY >= (windowHeight * 1.2)){
+                        //     draggableResizable.style.top = (scrollY - event.clientY) + (event.clientY - offsetY) + "px";
+                        // }else{
+                        scrollY = document.querySelector('#body').scrollTop
+                        if (scrollY < totalContentHeight) {
+                            draggableResizable.style.top = scrollY + (event.clientY - offsetY) + "px";
                         }
-                        if (event.clientY > 600) {
-                            // console.log('event.clientX ',event.clientY )
 
-                            // window.scrollTo(event.clientX,event.clientY)
-                        }
+                        // }
                     }
+                    if (event.clientY > 600) {
+                        // console.log('event.clientX ',event.clientY )
 
-                    document.addEventListener("mouseup", function () {
-                        isDragging = false;
-                        document.removeEventListener("mousemove", drag);
-                    });
+                        // window.scrollTo(event.clientX,event.clientY)
+                    }
                 }
 
+                document.addEventListener("mouseup", function () {
+                    isDragging = false;
+                    document.removeEventListener("mousemove", drag);
+                });
             }
-            // window.addEventListener("mousedown",(event)=>{
-            //     console.log('eveent',window.scrollY)
-            // })
-
-            draggableResizable.addEventListener("mousedown", dragImg);
-
-
-            // Function to enable resizing
-            function initResize(event) {
-                isResizing = true;
-                resizeStartX = event.clientX;
-                resizeStartY = event.clientY;
-                originalWidth = parseInt(document.defaultView.getComputedStyle(draggableResizable).width, 10);
-                originalHeight = parseInt(document.defaultView.getComputedStyle(draggableResizable).height, 10);
-
-                document.addEventListener("mousemove", resize);
-                document.addEventListener("mouseup", stopResize);
-            }
-
-            // Function to update div size while resizing
-            function resize(event) {
-                if (isResizing) {
-                    const width = originalWidth + (event.clientX - resizeStartX);
-                    const height = originalHeight + (event.clientY - resizeStartY);
-                    draggableResizable.style.width = width + "px";
-                    draggableResizable.style.height = height + "px";
-                    let signCanvas = document.getElementById("signcanvas");
-                    const ctx = signCanvas.getContext("2d");
-
-                    const editorSymbol = document.getElementById("editor")
-                    editorSymbol.style.left = (width - 15) + "px"
-
-                }
-            }
-
-            // Function to stop resizing
-            function stopResize() {
-                isResizing = false;
-                document.removeEventListener("mousemove", resize);
-                document.removeEventListener("mouseup", stopResize);
-            }
-
-            // Add a resize handle to the div (bottom-right corner)
-            const resizeHandle = document.createElement("div");
-            resizeHandle.style.width = "10px";
-            resizeHandle.style.height = "10px";
-            resizeHandle.style.background = "gray";
-            resizeHandle.style.position = "absolute";
-            resizeHandle.style.bottom = 0;
-            resizeHandle.style.right = 0;
-            resizeHandle.style.cursor = "se-resize";
-            draggableResizable.appendChild(resizeHandle);
-            resizeHandle.addEventListener("mousedown", initResize);
-
-            const removeDiv = document.createElement("div");
-            removeDiv.textContent = "X"
-            removeDiv.style.width = "10px";
-            removeDiv.style.height = "10px";
-            removeDiv.style.color = "red";
-            removeDiv.style.position = "absolute";
-            removeDiv.style.top = 0;
-            removeDiv.style.left = 0;
-            removeDiv.style.cursor = "pointer";
-            draggableResizable.prepend(removeDiv);
-            removeDiv.addEventListener("click", () => {
-                draggableResizable.style.display = 'none'
-
-            });
-
-
 
         }
-        return {
-            pageInit: pageInit,
-            closeWindow: closeWindow,
-            createSignHolder: createSignHolder,
-            sendDataDiv: sendDataDiv
+        // window.addEventListener("mousedown",(event)=>{
+        //     console.log('eveent',window.scrollY)
+        // })
+
+        draggableResizable.addEventListener("mousedown", dragImg);
+
+
+        // Function to enable resizing
+        function initResize(event) {
+            isResizing = true;
+            resizeStartX = event.clientX;
+            resizeStartY = event.clientY;
+            originalWidth = parseInt(document.defaultView.getComputedStyle(draggableResizable).width, 10);
+            originalHeight = parseInt(document.defaultView.getComputedStyle(draggableResizable).height, 10);
+
+            document.addEventListener("mousemove", resize);
+            document.addEventListener("mouseup", stopResize);
         }
 
-    })
+        // Function to update div size while resizing
+        function resize(event) {
+            if (isResizing) {
+                const width = originalWidth + (event.clientX - resizeStartX);
+                const height = originalHeight + (event.clientY - resizeStartY);
+                draggableResizable.style.width = width + "px";
+                draggableResizable.style.height = height + "px";
+                let signCanvas = document.getElementById("signcanvas");
+                const ctx = signCanvas.getContext("2d");
+
+                const editorSymbol = document.getElementById("editor")
+                editorSymbol.style.left = (width - 15) + "px"
+
+            }
+        }
+
+        // Function to stop resizing
+        function stopResize() {
+            isResizing = false;
+            document.removeEventListener("mousemove", resize);
+            document.removeEventListener("mouseup", stopResize);
+        }
+
+        // Add a resize handle to the div (bottom-right corner)
+        const resizeHandle = document.createElement("div");
+        resizeHandle.style.width = "10px";
+        resizeHandle.style.height = "10px";
+        resizeHandle.style.background = "gray";
+        resizeHandle.style.position = "absolute";
+        resizeHandle.style.bottom = 0;
+        resizeHandle.style.right = 0;
+        resizeHandle.style.cursor = "se-resize";
+        draggableResizable.appendChild(resizeHandle);
+        resizeHandle.addEventListener("mousedown", initResize);
+
+        const removeDiv = document.createElement("div");
+        removeDiv.textContent = "X"
+        removeDiv.style.width = "10px";
+        removeDiv.style.height = "10px";
+        removeDiv.style.color = "red";
+        removeDiv.style.position = "absolute";
+        removeDiv.style.top = 0;
+        removeDiv.style.left = 0;
+        removeDiv.style.cursor = "pointer";
+        draggableResizable.prepend(removeDiv);
+        removeDiv.addEventListener("click", () => {
+            draggableResizable.style.display = 'none'
+
+        });
+
+
+
+    }
+    return {
+        pageInit: pageInit,
+        closeWindow: closeWindow,
+        createSignHolder: createSignHolder,
+        sendDataDiv: sendDataDiv,
+        createTemplate:createTemplate
+    }
+
+})

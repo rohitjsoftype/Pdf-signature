@@ -20,7 +20,7 @@
 
 define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/redirect', 'N/http', 'N/task', 'N/config', 'N/file', 'N/xml'],
 
-    function (ui, search, record, render, url, redirect, http, task, config,file,xml) {
+    function (ui, search, record, render, url, redirect, http, task, config, file, xml) {
 
         /**
                * Definition of the Suitelet script trigger point.
@@ -126,10 +126,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                         }
                         else if(upfile){
                             readPdfFile(upfile)
-                            $('div[id^="jBox"]').remove();
+                            $('div[id^="jBox"]').hide();
                         }else if(url){
                             renderPdfFile(url)
-                            $('div[id^="jBox"]').remove();
+                            $('div[id^="jBox"]').hide();
                         }else if((upfile == '' || upfile == null) && (url == '' || url == null )){
                             alert('Choose atleast one option')
                         }else{
@@ -508,6 +508,23 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                         label: "Body"
                     });
                     body_content.defaultValue = htmlContent
+
+                    // form.addField({
+                    //     id: 'custpage_divdata',
+                    //     type: ui.FieldType.TEXTAREA,
+                    //     label: 'div data'
+                    // }).updateDisplayType({
+                    //     displayType: ui.FieldDisplayType.HIDDEN
+                    // });
+
+                    // form.addField({
+                    //     id: 'custpage_fileid',
+                    //     type: ui.FieldType.TEXTAREA,
+                    //     label: 'FileID'
+                    // }).updateDisplayType({
+                    //     displayType: ui.FieldDisplayType.HIDDEN
+                    // });
+
                     form.addButton({
                         id: 'custpage_signholderbutton',
                         label: "Sign holder",
@@ -521,32 +538,67 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                     form.addButton({
                         id: 'custpage_save',
                         label: "Save",
-                        functionName: 'sendDataDiv'
+                        functionName: 'createTemplate'
                     });
+
+                    // form.addSubmitButton({
+                    //     id: 'custpage_submit',
+                    //     label: "Submit",
+                    // });
 
                     form.clientScriptFileId = 69559;
                     context.response.writePage(form);
 
                 }
                 if (context.request.method === 'POST') {
-                    var div_data = context.request.parameters.div_main
-                    log.debug('div',div_data)
-                    var file1 = render.xmlToPdf
-                        ({
-                            xmlString: div_data
+                    log.debug("context.request.body", context.request.body)
+                    var fileurl = JSON.parse(context.request.body)?.url
+                    var filedata = JSON.parse(context.request.body)?.file
+                    var div_data = JSON.parse(context.request.body).div_data
+
+                    log.debug("div_data", div_data)
+                    log.debug("fileurl", fileurl)
+                    log.debug("filedata", filedata)
+                    var get_fileurl;
+
+                    if (fileurl) {
+                        get_fileurl = fileurl;
+                    }
+
+                    if (filedata) {
+                        var fileObj = file.create({                //creating png file in the file cabinet
+                            name: filedata.name,
+                            fileType: file.Type.PDF,
+                            contents: filedata.contents,
+                            isOnline: true,
+                        });
+                        fileObj.folder = 10559;
+                        var fileId = fileObj.save();
+                        log.debug("fileId", fileId)
+                        var getfile = file.load({
+                            id: fileId
+                        });
+                        get_fileurl = getfile.url
+                    }
+
+                    var objRecord = record.create({
+                        type: 'customrecord_st_pdf_template',
+                        isDynamic: true,
                     });
 
-                //     var fileObj = file.create({                //creating png file in the file cabinet
-                //     name: 'signaturepdf.pdf',
-                //     fileType: file.Type.PDF,
-                //     contents: div_data,
-                //     folder: 10559,
-                // });
-                file1.name = 'signpdffi'
-                file1.folder= 10559;
-                var fileId = file1.save();  
+                    objRecord.setValue({
+                        fieldId: 'custrecord_st_sign_cordinate',
+                        value: div_data
+                    });
 
-                log.debug("file",fileId)
+                    objRecord.setValue({
+                        fieldId: 'custrecord_st_file_link',
+                        value: get_fileurl
+                    });
+
+                    var rec_id = objRecord.save();
+                    log.debug("recordid",rec_id)
+
 
 
                 }
