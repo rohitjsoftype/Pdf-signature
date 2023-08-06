@@ -309,7 +309,24 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
             window.close()
         }
         function createSignHolder() {
-            alert('here')
+            // alert('here')
+            let scrollY = 0
+            // let mousemoved = 0
+            // function updateScrollY(){
+            //     const windowHeight = window.innerHeight;
+            //     const totalContentHeight = document.querySelector('#div__body').scrollHeight;
+            //     const availableScrollHeight = totalContentHeight - windowHeight;
+            //     console.log('clientY0',mousemoved)
+            //     scrollY = (mousemoved / windowHeight) * availableScrollHeight;
+            //     console.log(JSON.stringify({
+            //     windowHeight,totalContentHeight,availableScrollHeight,scrollY
+            //     }))
+            // }
+            // function updateMousePos(e){
+            //     mousemoved = e.clientY
+            // }
+            // document.querySelector('#body').addEventListener('scrollend',updateScrollY)
+            
             let div = document.createElement('div');
             div.id = 'drag-div'
             div.style.width = '100px';
@@ -328,6 +345,7 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                 // console.log('event',event.target)
                 if (event.target.id === "drag-div") {
                     isDragging = true;
+                    // updateMousePos(event)
                     // console.log('event.clientX ',event.clientX )
                     // Calculate the offset between the mouse and the div's top-left corner
                     const rect = event.target.getBoundingClientRect();
@@ -338,10 +356,22 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                     document.addEventListener("mousemove", drag);
                     function drag(event) {
                         if (isDragging) {
+                            window.scroll(event.clientX,event.clientHeight)
                             // console.log('offsetX',offsetX);
                             // console.log('offsetY',offsetY);
                             draggableResizable.style.left = window.screenX + (event.clientX - offsetX) + "px";
-                            draggableResizable.style.top = window.scrollY + (event.clientY - offsetY) + "px";
+                            // const windowHeight = window.innerHeight;
+                            const totalContentHeight = document.querySelector('#div__body').scrollHeight;
+
+                            // if(scrollY >= (windowHeight * 1.2)){
+                            //     draggableResizable.style.top = (scrollY - event.clientY) + (event.clientY - offsetY) + "px";
+                            // }else{
+                                scrollY = document.querySelector('#body').scrollTop
+                                if(scrollY < totalContentHeight){
+                                    draggableResizable.style.top = scrollY + (event.clientY - offsetY) + "px";
+                                }
+
+                            // }
                         }
                         if (event.clientY > 600) {
                             // console.log('event.clientX ',event.clientY )
