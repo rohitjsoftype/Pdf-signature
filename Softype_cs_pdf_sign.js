@@ -137,6 +137,37 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                         'Content-Type': 'application/json'
                     }
                 });
+                if(response){
+                console.log('reesponse',response)
+
+                    var html = '';
+                    html += '<h2>Click below to sign</h2><br/>';
+                    html += `<a style="color:blue" href='https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}'>Click Here!</a><br/>`
+                    html += '<div style="padding-top:10px"><span><input id="btnCancel" type="button" onClick="init()" value="Ok" /></span>';
+                    html += '</div>';
+                    var option = {
+                        width: 500,
+                        height: 220,
+                        content: html,
+                        title: '',
+                        ignoreDelay: true,
+                        closeButton: false,
+                        blockScroll: false,
+                        closeOnClick: false,
+                        // cancelButton:"",
+                        onClose: function () {
+                            console.log('hereaja')
+                        }
+                    };
+            
+            
+                    var M = new jBox('Modal', option);
+                    var colorBg = "#607799"
+
+                    M.open();
+                    $('.jBox-Modal .jBox-title').css('background-color', colorBg);
+            
+                }
                
             };
             // Read the file as binary data
@@ -158,6 +189,37 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                     'Content-Type': 'application/json'
                 }
             });
+            if(response){
+                console.log('reesponse',response)
+                var html = '';
+                html += '<h2>Click below to sign</h2><br/>';
+                html += `<a style="color:blue" href="https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}"> Click Here! </a> <br/>`
+                html += '<div style="padding-top:10px"><span><input id="btnCancel" type="button" onClick="init()" value="Ok" /></span>';
+                html += '</div>';
+                var option = {
+                    width: 500,
+                    height: 220,
+                    content: html,
+                    title: '',
+                    ignoreDelay: true,
+                    closeButton: false,
+                    blockScroll: false,
+                    closeOnClick: false,
+                    // cancelButton:"",
+                    onClose: function () {
+                        console.log('hereaja')
+                    }
+                };
+        
+                var M = new jBox('Modal', option);
+                var colorBg = "#607799"
+
+                M.open();
+                $('.jBox-Modal .jBox-title').css('background-color', colorBg);
+                M.open();
+                $('.jBox-Modal .jBox-title').css('background-color', colorBg);
+        
+            }
             
         }
 
@@ -396,7 +458,7 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
         div.id = 'drag-div'
         div.style.width = '100px';
         div.style.height = '100px';
-        div.style.backgroundColor = 'black'
+        div.style.backgroundColor = "#FCFCA5"
         div.style.position = 'absolute'
         let main = document.querySelector('.main')
         main.prepend(div)
