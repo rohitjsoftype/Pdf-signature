@@ -120,7 +120,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                         let upfile = fileField.files[0]
                         console.log(upfile)
                         let url = selectedFile.value;
-                        alert(JSON.stringify({'file':upfile,'url':url}))
+                        // alert(JSON.stringify({'file':upfile,'url':url}))
                         if(upfile && url){
                             alert('Choose only one option')
                         }
@@ -598,8 +598,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
 
                     var rec_id = objRecord.save();
                     log.debug("recordid",rec_id)
-
-
+                    context.response.write(JSON.stringify({templateId:rec_id}));
 
                 }
             }
