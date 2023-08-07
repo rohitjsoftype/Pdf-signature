@@ -19,9 +19,11 @@
    ***************************************************************************************/
 define(['N/search', 'N/xml', 'N/https', 'N/record'], function (search, xml, https, record) {
     function pageInit(context) {
+        const searchParams = new URLSearchParams(document.URL);
+        const templateId = searchParams.get("templateId");
         var rec_Obj = record.load({
             type: 'customrecord_st_pdf_template',
-            id: '2'
+            id: templateId || '2'
         })
         var fileurl = rec_Obj.getValue('custrecord_st_file_link')
         var div_position = rec_Obj.getValue('custrecord_st_sign_cordinate')
