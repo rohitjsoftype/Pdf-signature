@@ -92,61 +92,121 @@ define(['N/search', 'N/xml', 'N/https', 'N/record'], function (search, xml, http
 
     function createTemplate()
     {
-        var quotes = document.getElementById('main1');
-        html2canvas(quotes).then((canvas) => {
-            //! MAKE YOUR PDF
-            var pdf = new jsPDF('p', 'pt', 'letter');
+        // var quotes = document.getElementById('main1');
+        // html2canvas(quotes).then((canvas) => {
+        //     //! MAKE YOUR PDF
+        //     var pdf = new jsPDF('p', 'pt', 'letter');
 
-            for (var i = 0; i <= quotes.clientHeight / 1584; i++) {
-                //! This is all just html2canvas stuff
-                var srcImg = canvas;
-                var sX = 120;
-                if (i == 0) {
-                    var sY = 50;
-                }
-                else {
-                    var sY = 1980 * i; // start 980 pixels down for every new page
-                }
+        //     var quotes_len =  Math.ceil(quotes.clientHeight / 1584)
+        //     for (var i = 0; i < quotes_len-1; i++) {
+        //         //! This is all just html2canvas stuff
+        //         console.log("quotes.clientHeight / 1584",quotes_len)
+        //         var srcImg = canvas;
+        //         var sX = 40;
+        //         if (i == 0) {
+        //             var sY = 50;
+        //         }
+        //         else {
+        //             var sY = 1980 * i; // start 980 pixels down for every new page
+        //         }
 
-                var sWidth = 1380;
-                var sHeight = 1980;
-                var dX = 0;
-                var dY = 0;
-                var dWidth = 1380;
-                var dHeight = 1980;
+        //         var sWidth = 1380;
+        //         var sHeight = 1980;
+        //         var dX = 0;
+        //         var dY = 0;
+        //         var dWidth = 1380;
+        //         var dHeight = 1980;
 
-                window.onePageCanvas = document.createElement("canvas");
-                onePageCanvas.setAttribute('width', 1380);
-                onePageCanvas.setAttribute('height', 1980);
-                var ctx = onePageCanvas.getContext('2d');
-                // details on this usage of this function: 
-                // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
-                ctx.drawImage(srcImg, sX, sY, sWidth, sHeight, dX, dY, dWidth, dHeight);
+        //         window.onePageCanvas = document.createElement("canvas");
+        //         onePageCanvas.setAttribute('width', 1380);
+        //         onePageCanvas.setAttribute('height', 1980);
+        //         var ctx = onePageCanvas.getContext('2d');
+        //         // details on this usage of this function: 
+        //         // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
+        //         ctx.drawImage(srcImg, sX, sY, sWidth, sHeight, dX, dY, dWidth, dHeight);
 
-                // document.body.appendChild(canvas);
-                var canvasDataURL = onePageCanvas.toDataURL("image/png", 1.0);
+        //         // document.body.appendChild(canvas);
+        //         var canvasDataURL = onePageCanvas.toDataURL("image/jpeg", 0.5);
 
-                var width = onePageCanvas.width;
-                var height = onePageCanvas.clientHeight;
+        //         var width = onePageCanvas.width;
+        //         var height = onePageCanvas.clientHeight;
 
-                console.log("height", height);
-                console.log("width", width);
-                //! If we're on anything other than the first page,
-                // add another page
-                if (i > 0) {
-                    pdf.addPage(); //8.5" x 11" in pts (in*72)
-                }
-                //! now we declare that we're working on that page
-                pdf.setPage(i + 1);
-                //! now we add content to that page!
-                pdf.addImage(canvasDataURL, 'JPEG', 40, 30, 560, 720, 'undefined' + i, 'FAST');
+        //         console.log("height", height);
+        //         console.log("width", width);
+        //         //! If we're on anything other than the first page,
+        //         // add another page
+        //         if (i > 0) {
+        //             pdf.addPage(); //8.5" x 11" in pts (in*72)
+        //         }
+        //         //! now we declare that we're working on that page
+        //         pdf.setPage(i + 1);
+        //         //! now we add content to that page!
+        //         pdf.addImage(canvasDataURL, 'JPEG', 40, 30, 530, 720, 'undefined' + i, 'FAST');
 
+        //     }
+        //     //! after the for loop is finished running, we save the pdf.
+        //     pdf.save('Test45.pdf');
+
+        // }
+        // )
+
+
+        const pdf = new jsPDF();
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        // Loop through each .pdf-page element
+
+        var div_obj = {};
+
+        var div_grag = document.querySelectorAll('#drag-div');
+        const canvas_height = (document.getElementsByTagName('canvas')[0]).height;
+        console.log("canvas_height",canvas_height);
+        for(k=0;k<div_grag.length;k++)
+        {
+            var div_drag_top = div_grag[k].style.top;
+            console.log("div_drag_top",div_drag_top);
+            div_drag_top = div_drag_top.replace("px","");
+            var pageno = Math.floor(div_drag_top/canvas_height);
+            if(!div_obj[pageno])
+            {
+            div_obj[pageno]= [div_grag[k]];
             }
-            //! after the for loop is finished running, we save the pdf.
-            pdf.save('Test45.pdf');
-
+            else
+            {
+                div_obj[pageno].push(div_grag[k]);
+            }
         }
-        )
+
+        console.log("div_obj[index]",JSON.stringify(div_obj));
+        const pdfPages = document.getElementsByTagName('canvas')
+        pdfPages.forEach(function (page, index) {
+            // Use html2canvas to capture the page content and convert it to an image
+            html2canvas(page).then(function (canvas) {
+                const imgData = canvas.toDataURL('image/jpeg');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                if (index !== 0) {
+                    pdf.addPage(); // Add a new page for each subsequent page
+                }
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+                if(div_obj[index])
+                {
+                    console.log("div_obj[index]",JSON.stringify(div_obj));
+                    let signatures = div_obj[index];
+                    signatures.forEach((s)=>{
+                        console.log("s.style.left",s.style.left);
+                        console.log("s.style.top",s.style.top);
+                        console.log("s.style.height",s.style.height);
+                        console.log("s.firstChild.src",s.firstChild.src);
+                        pdf.addImage(s.firstChild.src,'JPEG',(s.style.left).replace("px",""),(s.style.top).replace("px",""),(s.style.width).replace("px",""),(s.style.height).replace("px",""))
+                    })
+                }
+                // If this is the last page, save the PDF
+                if (index === pdfPages.length - 1) {
+                    pdf.save('multi-page-pdf.pdf');
+                }
+            });
+        });
     }
 
 

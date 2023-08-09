@@ -12,7 +12,7 @@
    ** You shall not disclose such Confidential Information and shall use it only in accordance with the terms of
    ** the license agreement you entered into with Softype.
    **
-   ** @Author      : Rohit Jha
+   ** @Author      :  Akash Chavan,Rohit Jha
    ** @Dated       : 03-05-2023
    ** @Version     : 2.1
    ** @Description : for sending email
@@ -456,6 +456,7 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
 
         let div = document.createElement('div');
         div.id = 'drag-div'
+        div.className = 'pdfblock'
         div.style.width = '100px';
         div.style.height = '100px';
         div.style.backgroundColor = "#FCFCA5"
