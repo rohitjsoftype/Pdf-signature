@@ -33,6 +33,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
         function onRequest(context) {
             try {
 
+                var imageloader = "https://tstdrv1338970.app.netsuite.com/core/media/media.nl?id=69573&c=TSTDRV1338970&h=V0FB7atC4TdIVu9C_VVuYx3X8uzWJFZP0cLtWJMPNoln0A0z"
                 if (context.request.method === 'GET') {
                     let htmlContent = `<!DOCTYPE html>
             <html>
@@ -47,7 +48,73 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                         border: 1px solid #ccc;
                         position: absolute;
                     }
+                    .btnModalY
+                    {
+	                    position: absolute; 
+ 	                    bottom: 10px;
+ 	                    float:left; 
+ 	                    /*float: center; margin:0px auto*/
+                    }
+                    .btnAP{
+ 
+                        min-width:55px;
+                        height:30px;                                                                                                  
+                        border:1px solid #125ab2;
+                        -webkit-border-radius: 3px;
+                        -moz-border-radius: 3px;
+                        border-radius: 3px;
+                        font-size:14px;
+                        font-family:Open Sans,Helvetica,sans-serif;
+                        font-weight: 600 ; 
+                        padding: 0 12px; 
+                        margin-right:15px;
+                        text-decoration:none;
+                        display:inline-block;
+                        color: #ffffff;
+                        background-color: #4c9dff;
+                        background-image: -webkit-gradient(linear, left top, left bottom, from(#4c9dff), to(#4c9dff));
+                        background-image: -webkit-linear-gradient(top, #4c9dff, #4c9dff);
+                        background-image: -moz-linear-gradient(top, #4c9dff, #4c9dff);
+                        background-image: -ms-linear-gradient(top, #4c9dff, #4c9dff);
+                        background-image: -o-linear-gradient(top, #4c9dff, #4c9dff);
+                        background-image: linear-gradient(to bottom, #4c9dff, #4c9dff);
+                        filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#4c9dff, endColorstr=#4c9dff);
+                      }
+                      .btnAP:hover
+                      {
+                        background: #1467cc;
+                      }
+                      .btnAP:focus
+                      {
+                        box-shadow:0 0 2px 2px rgba(24,123,242,.75);
+                      }
+                      .btnAP:active
+                      {
+                        background: #004599;
+                      }
+
+                      .jBox-title {
+                        
+                        font-size: 17px;
+                        font-family: Open Sans, Helvetica, sans-serif;
+                     }
+                      
+                      .btnAP:disabled
+                      {
+                        background: #e5e5e5;
+                        border:1px solid #cccccc;
+                        color: #777777;
+                      }
+                      .center {
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 200px;
+                      }
                 </style>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+                <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/pdfkit@0.10.0/js/pdfkit.standalone.js"></script>
@@ -60,12 +127,59 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
             </head>
             <body>
              
+            <div id="image_loader">
+                        <div style="margin-top:100px;" class="container h-100 d-flex align-items-center justify-content-center" id="img-spinner">
+                            <div class="spinner-grow text-primary" role="status">
+                            </div>
+                            <div class="spinner-grow text-secondary" role="status"> 
+                            </div>
+                            <div class="spinner-grow text-success" role="status">
+                            </div>
+                            <div class="spinner-grow text-danger" role="status">
+
+                            </div>
+                            <div class="spinner-grow text-warning" role="status">
+
+                            </div>
+                            <div class="spinner-grow text-info" role="status">
+
+                            </div>
+                            <div class="spinner-grow text-success" role="status">
+
+                            </div>
+                            <div class="spinner-grow text-dark" role="status">
+
+                            </div>
+                        </div>
+                </div>
+          
                 <div id="main1" class="main">
                     <div id="pdfViewer"></div>
-                    <div class="draggable-container" id="container">
+                    <div class="draggable-container" id="container" style="display:none">
                     </div>
+                    
                 </div>
                 <script>
+
+                function SendEmail() {
+                    
+                    var inputString = $("#InputEmail").val();
+                    alert(inputString);
+                    var emailArray = inputString.split(',');
+                    var send_email = true;
+                    var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+                    if(emailArray.length > 0)
+                    {
+                        for(var j=0;j<emailArray.length;j++)
+                        {
+                            if (!(emailArray[j].match(mailformat)))
+                                {
+                                    send_email = false;
+                                }
+                        }
+                    }
+                }
+
                 function renderPdfFile(data){
                     pdfjsLib.getDocument(data).promise.then(pdf => {
                         // Get the number of pages in the PDF
@@ -81,6 +195,10 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
                             pdf.getPage(pageNum).then(page => {
                                 // Set the scale of the PDF. You can adjust this value as needed.
+                                var divpage = document.createElement('div');
+                                divpage.className='divpage';
+                                // divpage.style.textAlign = 'center'
+                                divpage.style.backgroundColor = '#f2f2f0'
                                 const scale = 2;
                                 // Set the viewport based on the desired scale
                                 const viewport = page.getViewport({ scale });
@@ -91,7 +209,8 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                                 // console.log(" viewport.width",t)
                                 canvas.height = viewport.height;
                                 canvas.width = viewport.width;
-                                pdfContainer.appendChild(canvas);
+                                divpage.appendChild(canvas);
+                                pdfContainer.appendChild(divpage);
     
                                 // Render the page content on the canvas
                                 const renderContext = {
@@ -101,6 +220,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                                 page.render(renderContext);
                             });
                         }
+                        $('#image_loader').hide();
                     });
                 }
                 
@@ -114,6 +234,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                         reader.readAsArrayBuffer(file)
                     }
                     function saveChoice(){
+                        $('#image_loader').show();
                         let selectedFile = document.getElementById('fileid');
                         let fileField = document.getElementById('uploadfile');
 
@@ -527,7 +648,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
 
                     form.addButton({
                         id: 'custpage_signholderbutton',
-                        label: "Sign holder",
+                        label: "Add Sign Holder",
                         functionName: 'createSignHolder'
                     });
                     form.addButton({
@@ -554,7 +675,16 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                     log.debug("context.request.body", context.request.body)
                     var fileurl = JSON.parse(context.request.body)?.url
                     var filedata = JSON.parse(context.request.body)?.file
-                    var div_data = JSON.parse(context.request.body).div_data
+                    var div_data = JSON.parse(context.request.body)?.div_data
+                    var emaildata = JSON.parse(context.request.body)?.action
+
+                    if(emaildata == 'sendemail')
+                    {
+                        var emailArray = JSON.parse(context.request.body)?.action
+                    }
+
+                    else
+                    {
 
                     log.debug("div_data", div_data)
                     log.debug("fileurl", fileurl)
@@ -597,8 +727,9 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/render', 'N/url', 'N/red
                     });
 
                     var rec_id = objRecord.save();
-                    log.debug("recordid",rec_id)
-                    context.response.write(JSON.stringify({templateId:rec_id}));
+                    log.debug("recordid", rec_id)
+                    context.response.write(JSON.stringify({ templateId: rec_id }));
+                }
 
                 }
             }

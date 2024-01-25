@@ -17,8 +17,9 @@
    ** @Version     : 2.1
    ** @Description : for sending email
    ***************************************************************************************/
-define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
+   define(['N/search', 'N/xml', 'N/https', 'N/email','N/record','N/format'], function (search, xml, https, email,record,format) {
     let boVal = ''
+    var successimg = "https://tstdrv1338970.app.netsuite.com/core/media/media.nl?id=69575&c=TSTDRV1338970&h=0EI5e8CMyPvbxf0UeJPyOY9O6uQCUIcPJlNLZLf3nE7QTZpR"
     function pageInit(context) {
         // alert('here')
         let options = {
@@ -39,7 +40,9 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
             type: "file",
             filters:
                 [
-                    ["filetype", "anyof", "PDF"]
+                    ["filetype", "anyof", "PDF"],
+                    'AND',
+                    ['folder', 'is', '11155']
                 ],
             columns:
                 [
@@ -71,17 +74,18 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
 
 
         var html = '';
-        html += '<h2>Upload or select a pdf.</h2><br/>';
+        html += '<div><h4>Upload or select a pdf.</h4></div>';
         // html+='<br/><br/>Click OK to update it or Cancel to select different parameters.<br/>';
         // html+='<br/><img id="spinner" src="'+$("#custpage_img_ajaxloader").val()+'" alt="Loading"/>';
-        html += '<div id="btnModalY"><div><input id="uploadfile" accept=".pdf" class="btnAP" type="file" value="Upload"/>';
-        html += '<div><br/><h2 style="text-align:center;">OR</h2><br/>';//
-        html += `<div><select id="fileid">${selectOptions}</select><div><br/></div>`
-        html += '<div style="gap:20px"><span><input id="btnCancel" type="button" onClick="init()" value="Cancel" /></span>';
-        html += '<span style="margin-left:30px"><input id="okCancel" type="button" onClick="saveChoice()" value="Ok" /></span></div>';
+        html += '<div style="margin-top:15px;"><input style="width:100%;" id="uploadfile" accept=".pdf" type="file" value="Upload"/></div>';
+        html += '<div style="margin-top:15px;"><h4 style="text-align:center;">OR</h4></div>';//
+        html += `<div style="margin-top:15px;"><select style="width:100%;" id="fileid">${selectOptions}</select></div>`
+
+        html += '<div style="margin-top:15px;" class="btnModalY" style="gap:20px"><span><input class="btnAP" id="btnCancel" type="button" onClick="init()" value="Cancel" /></span>';
+        html += '<span style="margin-left:30px"><input class="btnAP" id="okCancel" type="button" onClick="saveChoice()" value="Ok" /></span></div>';
         var option = {
             width: 500,
-            height: 220,
+            height: 250,
             content: html,
             title: 'Choose a file',
             ignoreDelay: true,
@@ -97,12 +101,17 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
 
         var M = new jBox('Modal', option);
         var colorBg = "#607799"
+        $('#image_loader').hide();
         M.open();
         $('.jBox-Modal .jBox-title').css('background-color', colorBg);
         // recObj.setValue('custpage_bodycontent','<p>hello world<p>')
     }
 
+
+
     function createTemplate(context) {
+        $('#main1').hide();
+        $('#image_loader').show();
         var div_drag = document.querySelectorAll('#drag-div');
         var div_data = ""
         for (var i = 0; i < div_drag.length; i++) {
@@ -112,12 +121,12 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
 
         var requestData;
         if (file) {
-            
+
             var fileReader = new FileReader();
             // Read the file as binary and send it to SuiteScript
             fileReader.onload = function (event) {
                 var fileData = event.target.result;
-                console.log("fileData",fileData)
+                console.log("fileData", fileData)
                 requestData = {
                     file: {
                         name: file.name,
@@ -125,10 +134,10 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                         contents: fileData.split(',')[1], // Extract the base64-encoded data from the data URL
                         isOnline: true // Set to true to store the file in the file cabinet
                     },
-                    div_data:div_data
+                    div_data: div_data
                 };
 
-                console.log("requestData",requestData)
+                console.log("requestData", requestData)
 
                 var response = https.post({
                     url: 'https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2254&deploy=1&compid=TSTDRV1338970&h=f05d0658b66b376313fc', // Replace with your SuiteScript script URL
@@ -137,19 +146,27 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                         'Content-Type': 'application/json'
                     }
                 });
-                if(response){
-                console.log('reesponse',response)
+                if (response) {
+                    console.log('response', response)
 
-                    var html = '';
-                    html += '<h2>Click below to sign</h2><br/>';
-                    html += `<a style="color:blue" href='https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}'>Click Here!</a><br/>`
-                    html += '<div style="padding-top:10px"><span><input id="btnCancel" type="button" onClick="init()" value="Ok" /></span>';
-                    html += '</div>';
+                    var htmlemail = `<div class="form-group">
+                                     <label for="exampleInputEmail1">Email address</label>
+                                     <input type="email" class="form-control" id="InputEmail" aria-describedby="emailHelp" placeholder="Enter email">
+                                     <small id="emailHelp" class="form-text text-muted">Please input 10 emails only with comma seperated</small>
+                                     </div>`
+                    htmlemail += '<div style="margin-top:15px;" class="btnModalY" style="gap:20px"><span><input class="btnAP" id="btnCancel" type="button" onClick="init()" value="Cancel" /></span>';
+                    htmlemail += '<span style="margin-left:30px"><input class="btnAP" id="okSend" type="button" value="SEND" /></span></div>';
+
+                    // var html = '';
+                    // html += '<h4>Click below to sign</h4><br/>';
+                    // html += `<a style="color:blue; font-size: 16px;" href='https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}'>Click Here!</a><br/>`
+                    // html += '<div class="btnModalY" style="padding-top:10px; align:center;"><span><input class="btnAP" id="btnCancel" type="button" onClick="init()" value="Cancel" /></span>';
+                    // html += '</div>';
                     var option = {
                         width: 500,
-                        height: 220,
-                        content: html,
-                        title: '',
+                        height: 185,
+                        content: htmlemail,
+                        title: 'Send Email',
                         ignoreDelay: true,
                         closeButton: false,
                         blockScroll: false,
@@ -159,27 +176,30 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                             console.log('hereaja')
                         }
                     };
-            
-            
+
+                    var url_email = `https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}`
+
                     var M = new jBox('Modal', option);
                     var colorBg = "#607799"
-
+                    $('#image_loader').hide();
                     M.open();
+                    document.getElementById("okSend").addEventListener("click", function () {
+                        SendEmail(url_email)
+                    });
                     $('.jBox-Modal .jBox-title').css('background-color', colorBg);
-            
+
                 }
-               
+
             };
             // Read the file as binary data
             fileReader.readAsDataURL(file);
         }
-        else
-        {
+        else {
             let selectedFile = document.getElementById('fileid');
             var fileurl = selectedFile.value;
             requestData = {
                 url: fileurl,
-                div_data:div_data
+                div_data: div_data
             }
 
             var response = https.post({
@@ -189,18 +209,27 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                     'Content-Type': 'application/json'
                 }
             });
-            if(response){
-                console.log('reesponse',response)
-                var html = '';
-                html += '<h2>Click below to sign</h2><br/>';
-                html += `<a style="color:blue" href="https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}"> Click Here! </a> <br/>`
-                html += '<div style="padding-top:10px"><span><input id="btnCancel" type="button" onClick="init()" value="Ok" /></span>';
-                html += '</div>';
+            if (response) {
+                console.log('reesponse', response)
+
+                var htmlemail = `<div class="form-group">
+                                     <label for="exampleInputEmail1">Email address</label>
+                                     <input type="email" class="form-control" id="InputEmail" aria-describedby="emailHelp" placeholder="Enter email">
+                                     <small id="emailHelp" class="form-text text-muted">Please input 10 emails only with comma seperated</small>
+                                     </div>`
+                htmlemail += '<div style="margin-top:15px;" class="btnModalY" style="gap:20px"><span><input class="btnAP" id="btnCancel" type="button" onClick="init()" value="Cancel" /></span>';
+                htmlemail += '<span style="margin-left:30px"><input class="btnAP" id="okSend" type="button" value="SEND" /></span></div>';
+
+                // var html = '';
+                // html += '<h4>Click below to sign</h4><br/>';
+                // html += `<a style="color:blue; font-size: 16px;" href='https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}'>Click Here!</a><br/>`
+                // html += '<div class="btnModalY" style="padding-top:10px; align:center;"><span><input class="btnAP" id="btnCancel" type="button" onClick="init()" value="Cancel" /></span>';
+                // html += '</div>';
                 var option = {
                     width: 500,
-                    height: 220,
-                    content: html,
-                    title: '',
+                    height: 185,
+                    content: htmlemail,
+                    title: 'Send Email',
                     ignoreDelay: true,
                     closeButton: false,
                     blockScroll: false,
@@ -210,21 +239,121 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
                         console.log('hereaja')
                     }
                 };
-        
+
+                var url_email = `https://tstdrv1338970.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2259&deploy=1&compid=TSTDRV1338970&h=f966d848809f2747bfb3&templateId=${JSON.parse(response.body).templateId}`
+
                 var M = new jBox('Modal', option);
                 var colorBg = "#607799"
+                $('#image_loader').hide();
+                M.open();
+                document.getElementById("okSend").addEventListener("click", function () {
+                    SendEmail(url_email)
+                });
+                $('.jBox-Modal .jBox-title').css('background-color', colorBg);
 
-                M.open();
-                $('.jBox-Modal .jBox-title').css('background-color', colorBg);
-                M.open();
-                $('.jBox-Modal .jBox-title').css('background-color', colorBg);
-        
             }
-            
+
         }
 
-    
-       
+
+
+    }
+
+
+    function SendEmail(url_email) {
+
+        var inputString = $("#InputEmail").val();
+        //alert(inputString);
+        var emailArray = inputString.split(',');
+        var send_email = true;
+        var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if (emailArray.length > 0) {
+            for (var j = 0; j < emailArray.length; j++) {
+                if (!(emailArray[j].match(mailformat))) {
+                    send_email = false;
+                    alert("Please Enter Valid Email Address" + "-" + emailArray[j])
+                }
+            }
+        }
+
+        if (send_email) {
+            
+
+            for (var k = 0; k < emailArray.length; k++) {
+
+                var sendurl = url_email;
+                var timestamp = new Date().getTime();
+                sendurl = sendurl+`&email=${emailArray[k]}&nonce=${timestamp}`
+                email.send({
+                    author: 19565,
+                    recipients: emailArray[k],
+                    subject: 'Signature PDF',
+                    body: `<html><body><h4>Hi</h4><br/><h4>Please click on the link below and gothrough the PDF document that needs your signature.</h4><br/><a href="${sendurl}">Click here</a><br/><br/><br/><h4>Thank You.</h4><h4>Regards</h4><h4>Softype Team</h4></body></html>`,
+                });
+                var objRecord = record.create({
+                    type: 'customrecord_customer_sign_data',
+                    isDynamic: true,
+                });
+
+                objRecord.setValue({
+                    fieldId: 'custrecord_cust_email_address',
+                    value: emailArray[k]
+                });
+
+                objRecord.setValue({
+                    fieldId: 'custrecord_cust_time_stamp',
+                    value: timestamp
+                });
+
+                var rec_id = objRecord.save();
+            }
+
+            var html = '<h5>Sent Email Successfully</h5><br/>';
+            html += `<center><img style="height:70px; width:95px;" id="img-success" src="${successimg}"/></center>`
+            html += '<div class="btnModalY" style="padding-top:10px; align:center;"><span><input class="btnAP" id="btnCancel" type="button" onClick="init()" value="Ok" /></span>';
+            html += '</div>';
+            var option = {
+                width: 500,
+                height: 220,
+                content: html,
+                title: 'Alert',
+                ignoreDelay: true,
+                closeButton: false,
+                blockScroll: false,
+                closeOnClick: false,
+                // cancelButton:"",
+                onClose: function () {
+                    console.log('hereaja')
+                }
+            };
+
+
+            var M = new jBox('Modal', option);
+            var colorBg = "#607799"
+            $('#image_loader').hide();
+            M.open();
+            $('.jBox-Modal .jBox-title').css('background-color', colorBg);
+
+        }
+    }
+
+    function formattedDateandTime() {
+
+        var date = new Date();
+
+        var formattedDate = format.format({
+            value: date,
+            type: format.Type.DATETIME,
+            timezone: format.Timezone.timeZone
+        });
+
+        var parsedDate = format.parse({
+            value: formattedDate,
+            type: format.Type.DATE,
+        });
+
+        return parsedDate;
+
     }
 
 
@@ -457,6 +586,7 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
         let div = document.createElement('div');
         div.id = 'drag-div'
         div.className = 'pdfblock'
+        div.style.position='fixed'
         div.style.width = '100px';
         div.style.height = '100px';
         div.style.backgroundColor = "#FCFCA5"
@@ -584,6 +714,17 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
 
         });
 
+        const add_sign = document.createElement("div");
+        add_sign.textContent = "Add Signature"
+        add_sign.style.width = "70px";
+        add_sign.style.height = "10px";
+        add_sign.style.color = "black";
+        add_sign.style.fontSize = "8px;"
+        add_sign.style.position = "flex";
+        add_sign.style.top = 0;
+        add_sign.style.float = 'right'
+        draggableResizable.prepend(add_sign);
+
 
 
     }
@@ -592,7 +733,7 @@ define(['N/search', 'N/xml', 'N/https'], function (search, xml, https) {
         closeWindow: closeWindow,
         createSignHolder: createSignHolder,
         sendDataDiv: sendDataDiv,
-        createTemplate:createTemplate
+        createTemplate: createTemplate
     }
 
 })
